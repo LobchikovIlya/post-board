@@ -63,4 +63,18 @@ public class PostController : ControllerBase
         return Ok(post);
     }
 
+    [HttpDelete]
+    [Route("{id:int}")]
+    public IActionResult Delete([FromRoute] int id)
+    {
+        var post = Posts.FirstOrDefault(p => p.Id == id);
+        if (post == null)
+        {
+            return NotFound($"Post with Id={id} not found.");
+        }
+
+        Posts.Remove(post);
+
+        return Ok();
+    }
 }
