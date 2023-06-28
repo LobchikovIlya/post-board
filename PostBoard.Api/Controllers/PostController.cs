@@ -15,6 +15,20 @@ public class PostController : ControllerBase
         return Ok(Posts);
     }
 
+    [HttpGet]
+    [Route("{id:int}")]
+    public IActionResult GetById([FromRoute] int id)
+    {
+        var post = Posts.FirstOrDefault(p => p.Id == id);
+
+        if (post == null)
+        {
+            return NotFound($"Post with Id={id} not found.");
+        }
+
+        return Ok(post);
+    }
+
     [HttpPost]
     public IActionResult Create([FromBody] Post input)
     {
@@ -24,7 +38,7 @@ public class PostController : ControllerBase
         }
         else
         {
-            var maxId = Posts.Max(post => post.Id);
+            var maxId = Posts.Max(p => p.Id);
             input.Id = maxId + 1;
         }
             
@@ -32,4 +46,21 @@ public class PostController : ControllerBase
 
         return Ok(input);
     }
+
+    [HttpPut]
+    [Route("{id:int}")]
+    public IActionResult Update([FromRoute] int id, [FromBody] Post input)
+    {
+        var post = Posts.FirstOrDefault(p => p.Id == id);
+        if (post == null)
+        {
+            return NotFound($"Post with Id={id} not found.");
+        }
+
+        post.Title = input.Title;
+        post.Body = input.Body;
+
+        return Ok(post);
+    }
+
 }
