@@ -1,6 +1,6 @@
 ﻿namespace PostBoard.Api.Data
 {
-    public class Berthday
+    public class Birthday
     {
         public int Id { get; set; }
         public string UserFullName { get; set; }
