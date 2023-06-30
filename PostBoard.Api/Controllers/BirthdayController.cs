@@ -3,7 +3,7 @@ using PostBoard.Api.Data;
 
 namespace PostBoard.Api.Controllers;
 
-[Route("api/berthday")]
+[Route("api/birthday")]
 [ApiController]
 public class BirthdayController : ControllerBase
 {
@@ -25,6 +25,7 @@ public class BirthdayController : ControllerBase
         {
             return NotFound($"Birthday with Id={id} not found.");
         }
+
         return Ok(birthday);
     }
 
@@ -58,7 +59,7 @@ public class BirthdayController : ControllerBase
 
         birthday.UserFullName = input.UserFullName;
         birthday.Date = input.Date;
-
+        
         return Ok(birthday);
     }
 
