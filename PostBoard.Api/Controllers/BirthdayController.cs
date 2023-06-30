@@ -3,7 +3,7 @@ using PostBoard.Api.Data;
 
 namespace PostBoard.Api.Controllers;
 
-[Route("api/birthday")]
+[Route("api/birthdays")]
 [ApiController]
 public class BirthdayController : ControllerBase
 {
