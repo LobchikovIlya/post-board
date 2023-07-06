@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PostBoard.Api.Data;
+using PostBoard.Api.Validators;
 
 namespace PostBoard.Api.Controllers;
 
@@ -32,6 +33,14 @@ public class BirthdayController : ControllerBase
     [HttpPost]
     public IActionResult Create([FromBody] Birthday input)
     {
+        var validator = new BirthdayValidator();
+        var result = validator.Validate(input);
+
+        if (!result.IsValid)
+        {
+            return BadRequest("Validation error.");
+        }
+
         if (Birthdays.Count == 0)
         {
             input.Id = 1;
@@ -51,6 +60,14 @@ public class BirthdayController : ControllerBase
     [Route("{id:int}")]
     public IActionResult Update([FromRoute] int id, [FromBody] Birthday input)
     {
+        var validator = new BirthdayValidator();
+        var result = validator.Validate(input);
+
+        if (!result.IsValid)
+        {
+            return BadRequest("Validation error.");
+        }
+
         var birthday = Birthdays.FirstOrDefault(b => b.Id == id);
         if (birthday == null)
         {
