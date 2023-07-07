@@ -36,9 +36,9 @@ public class PostController : ControllerBase
     public IActionResult Create([FromBody] Post input)
     {
         var validator = new PostValidator();
-        var result = validator.Validate(input);
+        var validationResult = validator.Validate(input);
 
-        if (!result.IsValid)
+        if (!validationResult.IsValid)
         {
             return BadRequest("Validation failed.");
         }
