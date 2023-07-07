@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using PostBoard.Api.Data;
+using PostBoard.Api.Models;
 using PostBoard.Api.Validators;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace PostBoard.Api.Controllers;
 
@@ -34,9 +36,9 @@ public class BirthdayController : ControllerBase
     public IActionResult Create([FromBody] Birthday input)
     {
         var validator = new BirthdayValidator();
-        var result = validator.Validate(input);
+        var validationResult = validator.Validate(input);
 
-        if (!result.IsValid)
+        if (!validationResult.IsValid)
         {
             return BadRequest("Validation error.");
         }
@@ -61,9 +63,9 @@ public class BirthdayController : ControllerBase
     public IActionResult Update([FromRoute] int id, [FromBody] Birthday input)
     {
         var validator = new BirthdayValidator();
-        var result = validator.Validate(input);
+        var validationResult = validator.Validate(input);
 
-        if (!result.IsValid)
+        if (!validationResult.IsValid)
         {
             return BadRequest("Validation error.");
         }

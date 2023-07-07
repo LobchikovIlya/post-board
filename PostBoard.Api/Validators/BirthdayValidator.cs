@@ -1,7 +1,6 @@
-﻿
-
-using FluentValidation;
-using PostBoard.Api.Data;
+﻿using FluentValidation;
+using PostBoard.Api.Models;
+using System;
 
 namespace PostBoard.Api.Validators;
 

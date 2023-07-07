@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using PostBoard.Api.Data;
+using PostBoard.Api.Models;
 using PostBoard.Api.Validators;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace PostBoard.Api.Controllers;
 
@@ -61,9 +63,9 @@ public class PostController : ControllerBase
     public IActionResult Update([FromRoute] int id, [FromBody] Post input)
     {
         var validator = new PostValidator();
-        var result = validator.Validate(input);
+        var validationResult = validator.Validate(input);
 
-        if (!result.IsValid)
+        if (!validationResult.IsValid)
         {
             return BadRequest("Validation failed.");
         }
