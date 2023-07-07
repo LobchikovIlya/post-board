@@ -1,4 +1,4 @@
-﻿namespace PostBoard.Api.Data;
+﻿namespace PostBoard.Api.Models;
 
 public class Post
 {
