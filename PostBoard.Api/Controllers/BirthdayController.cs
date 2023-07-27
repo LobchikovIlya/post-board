@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using PostBoard.Api.Models;
 using PostBoard.Api.Validators;
 using System.Collections.Generic;
@@ -10,19 +11,26 @@ namespace PostBoard.Api.Controllers;
 [ApiController]
 public class BirthdayController : ControllerBase
 {
-    private static List<Birthday> Birthdays = new List<Birthday>();
+    //private static List<Birthday> Birthdays = new List<Birthday>();
+    private readonly PostBoardContext _context;
+    public BirthdayController(PostBoardContext context)
+    {
+        _context = context;
+    }
 
     [HttpGet]
     public IActionResult GetAll()
     {
-        return Ok(Birthdays);
+        var birthdays = _context.Birthdays.ToList();
+        
+        return Ok(birthdays);
     }
 
     [HttpGet]
     [Route("{id:int}")]
     public IActionResult GetById([FromRoute] int id)
     {
-        var birthday = Birthdays.FirstOrDefault(b => b.Id == id);
+        var birthday = _context.Birthdays.FirstOrDefault(b => b.Id == id);
 
         if (birthday == null)
         {
@@ -43,7 +51,7 @@ public class BirthdayController : ControllerBase
             return BadRequest("Validation error.");
         }
 
-        if (Birthdays.Count == 0)
+    /*    if (Birthdays.Count == 0)
         {
             input.Id = 1;
         }
@@ -51,9 +59,11 @@ public class BirthdayController : ControllerBase
         {
             var maxId = Birthdays.Max(b => b.Id);
             input.Id = maxId + 1;
-        }
+        }*/
 
-        Birthdays.Add(input);
+
+        _context.Birthdays.Add(input);
+        _context.SaveChanges();
 
         return Ok(input);
     }
@@ -70,7 +80,7 @@ public class BirthdayController : ControllerBase
             return BadRequest("Validation error.");
         }
 
-        var birthday = Birthdays.FirstOrDefault(b => b.Id == id);
+        var birthday = _context.Birthdays.FirstOrDefault(b => b.Id == id);
         if (birthday == null)
         {
             return NotFound($"Birthday with Id={id} not found.");
@@ -78,7 +88,9 @@ public class BirthdayController : ControllerBase
 
         birthday.UserFullName = input.UserFullName;
         birthday.Date = input.Date;
-        
+        _context.Entry(birthday).State = EntityState.Modified;
+        _context.SaveChanges();
+
         return Ok(birthday);
     }
 
@@ -86,13 +98,14 @@ public class BirthdayController : ControllerBase
     [Route("{id:int}")]
     public IActionResult Delete([FromRoute] int id)
     {
-        var birthday = Birthdays.FirstOrDefault(b => b.Id == id);
+        var birthday = _context.Birthdays.FirstOrDefault(b => b.Id == id);
         if (birthday == null)
         {
             return NotFound($"Birthday with Id={id} not found.");
         }
 
-        Birthdays.Remove(birthday);
+        _context.Birthdays.Remove(birthday);
+        _context.SaveChanges();
 
         return Ok();
     }
