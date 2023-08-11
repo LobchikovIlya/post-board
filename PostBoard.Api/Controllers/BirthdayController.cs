@@ -78,7 +78,6 @@ public class BirthdayController : ControllerBase
 
         birthday.UserFullName = input.UserFullName;
         birthday.Date = input.Date;
-       // _dbcontext.Entry(birthday).State = EntityState.Modified;
         _dbcontext.SaveChanges();
 
         return Ok(birthday);

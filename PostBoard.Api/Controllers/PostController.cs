@@ -78,7 +78,6 @@ public class PostController : ControllerBase
 
         post.Title = input.Title;
         post.Body = input.Body;
-        _dbcontext.Entry(post).State = EntityState.Modified;
         _dbcontext.SaveChanges();
 
         return Ok(post);
