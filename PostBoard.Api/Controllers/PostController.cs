@@ -11,18 +11,19 @@ namespace PostBoard.Api.Controllers;
 [ApiController]
 public class PostController : ControllerBase
 {
-    //private static List<Post> Posts = new List<Post>();
-    private  readonly PostBoardContext _context;
+    
+    private  readonly PostBoardContext _dbcontext;
 
     public PostController(PostBoardContext context)
     {
-        _context = context;
+        _dbcontext = context;
     }
 
     [HttpGet]
     public IActionResult GetAll()
     {
-        var posts = _context.Posts.ToList();
+        var posts = _dbcontext.Posts.ToList();
+
         return Ok(posts);
     }
 
@@ -30,7 +31,7 @@ public class PostController : ControllerBase
     [Route("{id:int}")]
     public IActionResult GetById([FromRoute] int id)
     {
-        var post =_context.Posts.FirstOrDefault(p => p.Id == id);
+        var post =_dbcontext.Posts.FirstOrDefault(p => p.Id == id);
 
         if (post == null)
         {
@@ -51,18 +52,8 @@ public class PostController : ControllerBase
             return BadRequest("Validation failed.");
         }
 
-       /* if (Posts.Count == 0)
-        {
-            input.Id = 1;
-        }
-        else
-        {
-            var maxId = Posts.Max(p => p.Id);
-            input.Id = maxId + 1;
-        }*/
-            
-        _context.Add(input);
-        _context.SaveChanges();
+        _dbcontext.Add(input);
+        _dbcontext.SaveChanges();
 
         return Ok(input);
     }
@@ -79,7 +70,7 @@ public class PostController : ControllerBase
             return BadRequest("Validation failed.");
         }
 
-        var post = _context.Posts.FirstOrDefault(p => p.Id == id);
+        var post = _dbcontext.Posts.FirstOrDefault(p => p.Id == id);
         if (post == null)
         {
             return NotFound($"Post with Id={id} not found.");
@@ -87,8 +78,8 @@ public class PostController : ControllerBase
 
         post.Title = input.Title;
         post.Body = input.Body;
-        _context.Entry(post).State = EntityState.Modified;
-        _context.SaveChanges();
+        _dbcontext.Entry(post).State = EntityState.Modified;
+        _dbcontext.SaveChanges();
 
         return Ok(post);
     }
@@ -97,14 +88,14 @@ public class PostController : ControllerBase
     [Route("{id:int}")]
     public IActionResult Delete([FromRoute] int id)
     {
-        var post = _context.Posts.FirstOrDefault(p => p.Id == id);
+        var post = _dbcontext.Posts.FirstOrDefault(p => p.Id == id);
         if (post == null)
         {
             return NotFound($"Post with Id={id} not found.");
         }
 
-        _context.Posts.Remove(post);
-        _context.SaveChanges();
+        _dbcontext.Posts.Remove(post);
+        _dbcontext.SaveChanges();
 
         return Ok();
     }
