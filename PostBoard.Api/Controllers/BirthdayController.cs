@@ -12,15 +12,16 @@ public class BirthdayController : ControllerBase
 {
     private readonly PostBoardContext _dbcontext;
 
-    public BirthdayController(PostBoardContext context)
+    public BirthdayController(PostBoardContext dbContext)
     {
-        _dbcontext = context;
+        _dbcontext = dbContext;
     }
 
     [HttpGet]
     public IActionResult GetAll()
     {
         var birthdays = _dbcontext.Birthdays.ToList();
+        
         return Ok(birthdays);
     }
 
@@ -66,7 +67,7 @@ public class BirthdayController : ControllerBase
             return BadRequest("Validation error.");
         }
 
-        var birthday =_dbcontext. Birthdays.FirstOrDefault(b => b.Id == id);
+        var birthday = _dbcontext.Birthdays.FirstOrDefault(b => b.Id == id);
         if (birthday == null)
         {
             return NotFound($"Birthday with Id={id} not found.");

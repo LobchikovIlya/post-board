@@ -22,6 +22,7 @@ public class PostController : ControllerBase
     public IActionResult GetAll()
     {
         var posts = _dbcontext.Posts.ToList();
+        
         return Ok(posts);
     }
 
@@ -29,7 +30,7 @@ public class PostController : ControllerBase
     [Route("{id:int}")]
     public IActionResult GetById([FromRoute] int id)
     {
-        var post =_dbcontext.Posts.FirstOrDefault(p => p.Id == id);
+        var post = _dbcontext.Posts.FirstOrDefault(p => p.Id == id);
 
         if (post == null)
         {
@@ -67,7 +68,7 @@ public class PostController : ControllerBase
             return BadRequest("Validation failed.");
         }
 
-        var post =_dbcontext.Posts.FirstOrDefault(p => p.Id == id);
+        var post = _dbcontext.Posts.FirstOrDefault(p => p.Id == id);
         if (post == null)
         {
             return NotFound($"Post with Id={id} not found.");
