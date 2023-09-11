@@ -8,11 +8,10 @@ using PostBoard.Api;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Configuration.AddJsonFile("appsettings.json");
+
 builder.Services.AddDbContext<PostBoardContext>((serviceProvider, options) =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("PostBoardContext");
-    options.UseNpgsql(connectionString);
+    options.UseNpgsql(builder.Configuration.GetConnectionString("PostBoardContext"));
 });
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
