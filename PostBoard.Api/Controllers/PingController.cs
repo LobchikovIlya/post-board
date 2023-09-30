@@ -9,6 +9,6 @@ public class PingController : ControllerBase
     [HttpGet]
     public IActionResult Ping()
     {
-        return Ok();
+        return  Ok();
     }
 }

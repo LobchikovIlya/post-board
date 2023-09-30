@@ -3,6 +3,8 @@ using PostBoard.Api.Models;
 using PostBoard.Api.Validators;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace PostBoard.Api.Controllers;
 
@@ -18,18 +20,18 @@ public class BirthdayController : ControllerBase
     }
 
     [HttpGet]
-    public IActionResult GetAll()
+    public async Task<IActionResult> GetAllAsync()
     {
-        var birthdays = _dbcontext.Birthdays.ToList();
+        var birthdays = await _dbcontext.Birthdays.ToListAsync();
         
         return Ok(birthdays);
     }
 
     [HttpGet]
     [Route("{id:int}")]
-    public IActionResult GetById([FromRoute] int id)
+    public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
     {
-        var birthday = _dbcontext.Birthdays.FirstOrDefault(b => b.Id == id);
+        var birthday = await _dbcontext.Birthdays.FirstOrDefaultAsync(b => b.Id == id);
 
         if (birthday == null)
         {
@@ -40,7 +42,7 @@ public class BirthdayController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult Create([FromBody] Birthday input)
+    public async Task<IActionResult> CreateAsync([FromBody] Birthday input)
     {
         var validator = new BirthdayValidator();
         var validationResult = validator.Validate(input);
@@ -50,14 +52,14 @@ public class BirthdayController : ControllerBase
             return BadRequest("Validation error.");
         }
         _dbcontext.Birthdays.Add(input);
-        _dbcontext.SaveChanges();
+       await _dbcontext.SaveChangesAsync();
 
         return Ok(input);
     }
 
     [HttpPut]
     [Route("{id:int}")]
-    public IActionResult Update([FromRoute] int id, [FromBody] Birthday input)
+    public  async Task<IActionResult>  UpdateAsync([FromRoute] int id, [FromBody] Birthday input)
     {
         var validator = new BirthdayValidator();
         var validationResult = validator.Validate(input);
@@ -67,7 +69,7 @@ public class BirthdayController : ControllerBase
             return BadRequest("Validation error.");
         }
 
-        var birthday = _dbcontext.Birthdays.FirstOrDefault(b => b.Id == id);
+        var birthday =await _dbcontext.Birthdays.FirstOrDefaultAsync(b => b.Id == id);
         if (birthday == null)
         {
             return NotFound($"Birthday with Id={id} not found.");
@@ -75,23 +77,23 @@ public class BirthdayController : ControllerBase
         
         birthday.UserFullName = input.UserFullName;
         birthday.Date = input.Date;
-        _dbcontext.SaveChanges();
+       await _dbcontext.SaveChangesAsync();
         
-        return Ok(birthday);
+        return  Ok(birthday);
     }
 
     [HttpDelete]
     [Route("{id:int}")]
-    public IActionResult Delete([FromRoute] int id)
+    public async Task<IActionResult> DeleteAsync([FromRoute] int id)
     {
-        var birthday = _dbcontext.Birthdays.FirstOrDefault(b => b.Id == id);
+        var birthday = await _dbcontext.Birthdays.FirstOrDefaultAsync(b => b.Id == id);
         if (birthday == null)
         {
             return NotFound($"Birthday with Id={id} not found.");
         }
 
        _dbcontext.Birthdays.Remove(birthday);
-       _dbcontext.SaveChanges();
+       await _dbcontext.SaveChangesAsync();
 
         return Ok();
     }

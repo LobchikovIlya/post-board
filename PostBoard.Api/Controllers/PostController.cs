@@ -3,6 +3,8 @@ using PostBoard.Api.Models;
 using PostBoard.Api.Validators;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace PostBoard.Api.Controllers;
 
@@ -19,18 +21,18 @@ public class PostController : ControllerBase
     
 
     [HttpGet]
-    public IActionResult GetAll()
+    public async Task<IActionResult> GetAllAsync()
     {
-        var posts = _dbcontext.Posts.ToList();
+        var posts =await _dbcontext.Posts.ToListAsync();
         
         return Ok(posts);
     }
 
     [HttpGet]
     [Route("{id:int}")]
-    public IActionResult GetById([FromRoute] int id)
+    public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
     {
-        var post = _dbcontext.Posts.FirstOrDefault(p => p.Id == id);
+        var post =await _dbcontext.Posts.FirstOrDefaultAsync(p => p.Id == id);
 
         if (post == null)
         {
@@ -41,7 +43,7 @@ public class PostController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult Create([FromBody] Post input)
+    public async Task<IActionResult>  CreateAsync([FromBody] Post input)
     {
         var validator = new PostValidator();
         var validationResult = validator.Validate(input);
@@ -51,14 +53,14 @@ public class PostController : ControllerBase
             return BadRequest("Validation failed.");
         }
         _dbcontext.Posts.Add(input);
-        _dbcontext.SaveChanges();
+        await _dbcontext.SaveChangesAsync();
 
         return Ok(input);
     }
 
     [HttpPut]
     [Route("{id:int}")]
-    public IActionResult Update([FromRoute] int id, [FromBody] Post input)
+    public async Task<IActionResult> UpdateAsync([FromRoute] int id, [FromBody] Post input)
     {
         var validator = new PostValidator();
         var validationResult = validator.Validate(input);
@@ -68,7 +70,7 @@ public class PostController : ControllerBase
             return BadRequest("Validation failed.");
         }
 
-        var post = _dbcontext.Posts.FirstOrDefault(p => p.Id == id);
+        var post = await _dbcontext.Posts.FirstOrDefaultAsync(p => p.Id == id);
         if (post == null)
         {
             return NotFound($"Post with Id={id} not found.");
@@ -76,23 +78,23 @@ public class PostController : ControllerBase
 
         post.Title = input.Title;
         post.Body = input.Body;
-        _dbcontext.SaveChanges();
+        await _dbcontext.SaveChangesAsync();
         
         return Ok(post);
     }
 
     [HttpDelete]
     [Route("{id:int}")]
-    public IActionResult Delete([FromRoute] int id)
+    public async Task<IActionResult> DeleteAsync([FromRoute] int id)
     {
-        var post = _dbcontext.Posts.FirstOrDefault(p => p.Id == id);
+        var post =await _dbcontext.Posts.FirstOrDefaultAsync(p => p.Id == id);
         if (post == null)
         {
             return NotFound($"Post with Id={id} not found.");
         }
 
         _dbcontext.Remove(post);
-        _dbcontext.SaveChanges();
+       await _dbcontext.SaveChangesAsync();
 
         return Ok();
     }
