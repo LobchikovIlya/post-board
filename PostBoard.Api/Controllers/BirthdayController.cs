@@ -51,7 +51,7 @@ public class BirthdayController : ControllerBase
         {
             return BadRequest("Validation error.");
         }
-        _dbcontext.Birthdays.Add(input);
+        await _dbcontext.Birthdays.AddAsync(input);
        await _dbcontext.SaveChangesAsync();
 
         return Ok(input);
@@ -69,7 +69,7 @@ public class BirthdayController : ControllerBase
             return BadRequest("Validation error.");
         }
 
-        var birthday =await _dbcontext.Birthdays.FirstOrDefaultAsync(b => b.Id == id);
+        var birthday = await _dbcontext.Birthdays.FirstOrDefaultAsync(b => b.Id == id);
         if (birthday == null)
         {
             return NotFound($"Birthday with Id={id} not found.");
@@ -79,7 +79,7 @@ public class BirthdayController : ControllerBase
         birthday.Date = input.Date;
        await _dbcontext.SaveChangesAsync();
         
-        return  Ok(birthday);
+        return Ok(birthday);
     }
 
     [HttpDelete]

@@ -23,7 +23,7 @@ public class PostController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllAsync()
     {
-        var posts =await _dbcontext.Posts.ToListAsync();
+        var posts = await _dbcontext.Posts.ToListAsync();
         
         return Ok(posts);
     }
@@ -32,7 +32,7 @@ public class PostController : ControllerBase
     [Route("{id:int}")]
     public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
     {
-        var post =await _dbcontext.Posts.FirstOrDefaultAsync(p => p.Id == id);
+        var post = await _dbcontext.Posts.FirstOrDefaultAsync(p => p.Id == id);
 
         if (post == null)
         {
@@ -87,7 +87,7 @@ public class PostController : ControllerBase
     [Route("{id:int}")]
     public async Task<IActionResult> DeleteAsync([FromRoute] int id)
     {
-        var post =await _dbcontext.Posts.FirstOrDefaultAsync(p => p.Id == id);
+        var post = await _dbcontext.Posts.FirstOrDefaultAsync(p => p.Id == id);
         if (post == null)
         {
             return NotFound($"Post with Id={id} not found.");
