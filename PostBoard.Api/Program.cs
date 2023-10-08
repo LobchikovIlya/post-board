@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PostBoard.Api;
+using PostBoard.Api.Services;
+using PostBoard.Api.Services.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,8 @@ builder.Services.AddDbContext<PostBoardContext>((serviceProvider, options) =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostBoardContext"));
 });
+builder.Services.AddTransient<IPostService, PostService>();
+builder.Services.AddTransient<IBirthdayService, BirthdayService>();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

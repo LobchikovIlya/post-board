@@ -9,7 +9,6 @@ public class BirthdayValidator : AbstractValidator<Birthday>
     public BirthdayValidator()
     {
         RuleFor(birthday => birthday.UserFullName)
-            .NotNull()
             .NotEmpty()
             .MaximumLength(50);
 

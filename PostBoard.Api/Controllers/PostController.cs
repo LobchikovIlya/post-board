@@ -1,10 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using Microsoft.AspNetCore.Mvc;
 using PostBoard.Api.Models;
 using PostBoard.Api.Validators;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using PostBoard.Api.Services.Contracts;
 
 namespace PostBoard.Api.Controllers;
 
@@ -12,18 +11,17 @@ namespace PostBoard.Api.Controllers;
 [ApiController]
 public class PostController : ControllerBase
 {
-    private readonly PostBoardContext _dbcontext;
+    private readonly IPostService _postService;
 
-    public PostController(PostBoardContext context)
+    public PostController(IPostService postService)
     {
-        _dbcontext = context;
+        _postService = postService;
     }
-    
 
     [HttpGet]
     public async Task<IActionResult> GetAllAsync()
     {
-        var posts = await _dbcontext.Posts.ToListAsync();
+        var posts = await _postService.GetAllAsync();
         
         return Ok(posts);
     }
@@ -32,7 +30,7 @@ public class PostController : ControllerBase
     [Route("{id:int}")]
     public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
     {
-        var post = await _dbcontext.Posts.FirstOrDefaultAsync(p => p.Id == id);
+        var post = await _postService.GetByIdAsync(id);
 
         if (post == null)
         {
@@ -52,11 +50,14 @@ public class PostController : ControllerBase
         {
             return BadRequest("Validation failed.");
         }
-        _dbcontext.Posts.Add(input);
-        await _dbcontext.SaveChangesAsync();
-
-        return Ok(input);
+        var postId = await _postService.CreateAsync(input);
+        // ReSharper disable once Mvc.ActionNotResolved
+        return CreatedAtAction(nameof(GetByIdAsync), new { id = postId }, input);
     }
+
+
+      
+    
 
     [HttpPut]
     [Route("{id:int}")]
@@ -70,32 +71,29 @@ public class PostController : ControllerBase
             return BadRequest("Validation failed.");
         }
 
-        var post = await _dbcontext.Posts.FirstOrDefaultAsync(p => p.Id == id);
-        if (post == null)
+        try
+        {
+            await _postService.UpdateAsync(id, input);
+            return NoContent();
+        }
+        catch (InvalidOperationException)
         {
             return NotFound($"Post with Id={id} not found.");
         }
-
-        post.Title = input.Title;
-        post.Body = input.Body;
-        await _dbcontext.SaveChangesAsync();
-        
-        return Ok(post);
     }
 
     [HttpDelete]
     [Route("{id:int}")]
     public async Task<IActionResult> DeleteAsync([FromRoute] int id)
     {
-        var post = await _dbcontext.Posts.FirstOrDefaultAsync(p => p.Id == id);
-        if (post == null)
+        try
+        {
+            await _postService.DeleteByIdAsync(id);
+            return NoContent();
+        }
+        catch (InvalidOperationException)
         {
             return NotFound($"Post with Id={id} not found.");
         }
-
-        _dbcontext.Remove(post);
-       await _dbcontext.SaveChangesAsync();
-
-        return Ok();
     }
 }
