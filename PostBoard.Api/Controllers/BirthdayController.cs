@@ -27,11 +27,11 @@ public class BirthdayController : ControllerBase
     }
 
     [HttpGet]
-    [Route("{id:int}", Name = "GetByIdAsync")]
+    [Route("{id:int}")]
     public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
     {
         var birthday = await _birthdayService.GetByIdAsync(id);
-
+        
         if (birthday == null)
         {
             return NotFound($"Birthday with Id={id} not found.");
@@ -45,35 +45,38 @@ public class BirthdayController : ControllerBase
     {
         var validator = new BirthdayValidator();
         var validationResult = validator.Validate(input);
-
+        
         if (!validationResult.IsValid)
         {
             return BadRequest("Validation error.");
         }
         var birthdayId = await _birthdayService.CreateAsync(input);
+        var createdBirthday = await _birthdayService.GetByIdAsync(birthdayId); 
         
-        
-        // ReSharper disable once Mvc.ActionNotResolved
-        return CreatedAtAction(nameof(GetByIdAsync), new { id = birthdayId }, input);
+        return Ok(createdBirthday);
     }
 
     [HttpPut]
     [Route("{id:int}")]
-    public  async Task<IActionResult>UpdateAsync([FromRoute] int id, [FromBody] Birthday input)
+    public  async Task<IActionResult> UpdateAsync([FromRoute] int id, [FromBody] Birthday input)
     {
         var validator = new BirthdayValidator();
         var validationResult = validator.Validate(input);
-
+        
         if (!validationResult.IsValid)
         {
             return BadRequest("Validation error.");
         }
-
-       
         try
         {
             await _birthdayService.UpdateAsync(id, input);
-            return NoContent();
+            var updatedBirthday = await _birthdayService.GetByIdAsync(id);
+            if (updatedBirthday == null)
+            {
+                return NotFound($"Birthday with Id={id} not found.");
+            }
+            
+            return Ok(updatedBirthday);
         }
         catch (InvalidOperationException)
         {
@@ -85,14 +88,10 @@ public class BirthdayController : ControllerBase
     [Route("{id:int}")]
     public async Task<IActionResult> DeleteAsync([FromRoute] int id)
     {
-        try
-        {
-            await _birthdayService.DeleteByIdAsync(id);
-            return NoContent();
-        }
-        catch (InvalidOperationException)
-        {
-            return NotFound($"Birthday with Id={id} not found.");
-        }
+       
+        await _birthdayService.DeleteByIdAsync(id);
+         
+        return Ok();
+        
     }
 }
