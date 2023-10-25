@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using Microsoft.AspNetCore.Mvc;
 using PostBoard.Api.Models;
 using PostBoard.Api.Validators;
-using System.Collections.Generic;
-using System.Linq;
+using System.Threading.Tasks;
+using PostBoard.Api.Services.Contracts;
 
 namespace PostBoard.Api.Controllers;
 
@@ -10,90 +11,92 @@ namespace PostBoard.Api.Controllers;
 [ApiController]
 public class PostController : ControllerBase
 {
-    private readonly PostBoardContext _dbcontext;
+    private readonly IPostService _postService;
 
-    public PostController(PostBoardContext context)
+    public PostController(IPostService postService)
     {
-        _dbcontext = context;
+        _postService = postService;
     }
-    
 
     [HttpGet]
-    public IActionResult GetAll()
+    public async Task<IActionResult> GetAllAsync()
     {
-        var posts = _dbcontext.Posts.ToList();
-        
+        var posts = await _postService.GetAllAsync();
+
         return Ok(posts);
     }
 
     [HttpGet]
     [Route("{id:int}")]
-    public IActionResult GetById([FromRoute] int id)
+    public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
     {
-        var post = _dbcontext.Posts.FirstOrDefault(p => p.Id == id);
-
-        if (post == null)
+        try
         {
-            return NotFound($"Post with Id={id} not found.");
-        }
+            var post = await _postService.GetByIdAsync(id);
 
-        return Ok(post);
+            return Ok(post);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return NotFound(exception.Message);
+        }
     }
 
     [HttpPost]
-    public IActionResult Create([FromBody] Post input)
+    public async Task<IActionResult> CreateAsync([FromBody] Post input)
     {
         var validator = new PostValidator();
-        var validationResult = validator.Validate(input);
+        var validationResult = await validator.ValidateAsync(input);
 
         if (!validationResult.IsValid)
         {
             return BadRequest("Validation failed.");
         }
-        _dbcontext.Posts.Add(input);
-        _dbcontext.SaveChanges();
 
-        return Ok(input);
+        var postId = await _postService.CreateAsync(input);
+        var createdPost = await _postService.GetByIdAsync(postId);
+
+        return CreatedAtRoute("GetPostById", new { id = postId }, createdPost);
     }
 
     [HttpPut]
     [Route("{id:int}")]
-    public IActionResult Update([FromRoute] int id, [FromBody] Post input)
+    public async Task<IActionResult> UpdateAsync([FromRoute] int id, [FromBody] Post input)
     {
         var validator = new PostValidator();
-        var validationResult = validator.Validate(input);
+        var validationResult = await validator.ValidateAsync(input);
 
         if (!validationResult.IsValid)
         {
             return BadRequest("Validation failed.");
         }
 
-        var post = _dbcontext.Posts.FirstOrDefault(p => p.Id == id);
-        if (post == null)
+        try
         {
-            return NotFound($"Post with Id={id} not found.");
-        }
+            await _postService.UpdateAsync(id, input);
+            var updatePost = await _postService.GetByIdAsync(id);
 
-        post.Title = input.Title;
-        post.Body = input.Body;
-        _dbcontext.SaveChanges();
-        
-        return Ok(post);
+            return Ok(updatePost);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return NotFound(exception.Message);
+        }
     }
 
     [HttpDelete]
     [Route("{id:int}")]
-    public IActionResult Delete([FromRoute] int id)
+    public async Task<IActionResult> DeleteAsync([FromRoute] int id)
     {
-        var post = _dbcontext.Posts.FirstOrDefault(p => p.Id == id);
-        if (post == null)
+        try
         {
-            return NotFound($"Post with Id={id} not found.");
+            await _postService.DeleteByIdAsync(id);
+
+            return Ok();
         }
-
-        _dbcontext.Remove(post);
-        _dbcontext.SaveChanges();
-
-        return Ok();
+        catch (InvalidOperationException exception)
+        {
+            return NotFound(exception.Message);
+        }
     }
 }
