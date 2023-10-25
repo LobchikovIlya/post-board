@@ -22,7 +22,7 @@ public class PostController : ControllerBase
     public async Task<IActionResult> GetAllAsync()
     {
         var posts = await _postService.GetAllAsync();
-        
+
         return Ok(posts);
     }
 
@@ -30,41 +30,41 @@ public class PostController : ControllerBase
     [Route("{id:int}")]
     public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
     {
-        var post = await _postService.GetByIdAsync(id);
-
-        if (post == null)
+        try
         {
-            return NotFound($"Post with Id={id} not found.");
-        }
+            var post = await _postService.GetByIdAsync(id);
 
-        return Ok(post);
+            return Ok(post);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return NotFound(exception.Message);
+        }
     }
 
     [HttpPost]
-    public async Task<IActionResult>  CreateAsync([FromBody] Post input)
+    public async Task<IActionResult> CreateAsync([FromBody] Post input)
     {
         var validator = new PostValidator();
-        var validationResult = validator.Validate(input);
+        var validationResult = await validator.ValidateAsync(input);
 
         if (!validationResult.IsValid)
         {
             return BadRequest("Validation failed.");
         }
+
         var postId = await _postService.CreateAsync(input);
-        // ReSharper disable once Mvc.ActionNotResolved
-        return CreatedAtAction(nameof(GetByIdAsync), new { id = postId }, input);
+        var createdPost = await _postService.GetByIdAsync(postId);
+
+        return CreatedAtRoute("GetPostById", new { id = postId }, createdPost);
     }
-
-
-      
-    
 
     [HttpPut]
     [Route("{id:int}")]
     public async Task<IActionResult> UpdateAsync([FromRoute] int id, [FromBody] Post input)
     {
         var validator = new PostValidator();
-        var validationResult = validator.Validate(input);
+        var validationResult = await validator.ValidateAsync(input);
 
         if (!validationResult.IsValid)
         {
@@ -74,11 +74,13 @@ public class PostController : ControllerBase
         try
         {
             await _postService.UpdateAsync(id, input);
-            return NoContent();
+            var updatePost = await _postService.GetByIdAsync(id);
+
+            return Ok(updatePost);
         }
-        catch (InvalidOperationException)
+        catch (InvalidOperationException exception)
         {
-            return NotFound($"Post with Id={id} not found.");
+            return NotFound(exception.Message);
         }
     }
 
@@ -89,11 +91,12 @@ public class PostController : ControllerBase
         try
         {
             await _postService.DeleteByIdAsync(id);
-            return NoContent();
+
+            return Ok();
         }
-        catch (InvalidOperationException)
+        catch (InvalidOperationException exception)
         {
-            return NotFound($"Post with Id={id} not found.");
+            return NotFound(exception.Message);
         }
     }
 }

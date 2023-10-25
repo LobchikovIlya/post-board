@@ -12,7 +12,7 @@ namespace PostBoard.Api.Controllers;
 public class BirthdayController : ControllerBase
 {
     private readonly IBirthdayService _birthdayService;
- 
+
     public BirthdayController(IBirthdayService birthdayService)
     {
         _birthdayService = birthdayService;
@@ -22,7 +22,7 @@ public class BirthdayController : ControllerBase
     public async Task<IActionResult> GetAllAsync()
     {
         var birthdays = await _birthdayService.GetAllAsync();
-        
+
         return Ok(birthdays);
     }
 
@@ -30,57 +30,62 @@ public class BirthdayController : ControllerBase
     [Route("{id:int}")]
     public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
     {
-        var birthday = await _birthdayService.GetByIdAsync(id);
-        
-        if (birthday == null)
+        try
         {
-            return NotFound($"Birthday with Id={id} not found.");
-        }
+            var birthday = await _birthdayService.GetByIdAsync(id);
 
-        return Ok(birthday);
+            return Ok(birthday);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return NotFound(exception.Message);
+        }
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateAsync([FromBody] Birthday input)
     {
         var validator = new BirthdayValidator();
-        var validationResult = validator.Validate(input);
-        
+        var validationResult = await validator.ValidateAsync(input);
+
         if (!validationResult.IsValid)
         {
             return BadRequest("Validation error.");
         }
+
+        if (input.Date.Kind is DateTimeKind.Unspecified)
+        {
+            input.Date = DateTime.SpecifyKind(input.Date, DateTimeKind.Utc);
+        }
+
         var birthdayId = await _birthdayService.CreateAsync(input);
-        var createdBirthday = await _birthdayService.GetByIdAsync(birthdayId); 
-        
+        var createdBirthday = await _birthdayService.GetByIdAsync(birthdayId);
+
         return Ok(createdBirthday);
     }
 
     [HttpPut]
     [Route("{id:int}")]
-    public  async Task<IActionResult> UpdateAsync([FromRoute] int id, [FromBody] Birthday input)
+    public async Task<IActionResult> UpdateAsync([FromRoute] int id, [FromBody] Birthday input)
     {
         var validator = new BirthdayValidator();
-        var validationResult = validator.Validate(input);
-        
+        var validationResult = await validator.ValidateAsync(input);
+
         if (!validationResult.IsValid)
         {
             return BadRequest("Validation error.");
         }
+
         try
         {
             await _birthdayService.UpdateAsync(id, input);
             var updatedBirthday = await _birthdayService.GetByIdAsync(id);
-            if (updatedBirthday == null)
-            {
-                return NotFound($"Birthday with Id={id} not found.");
-            }
-            
+
             return Ok(updatedBirthday);
         }
-        catch (InvalidOperationException)
+        catch (InvalidOperationException exception)
         {
-            return NotFound($"Birthday with Id={id} not found.");
+            return NotFound(exception.Message);
         }
     }
 
@@ -88,10 +93,15 @@ public class BirthdayController : ControllerBase
     [Route("{id:int}")]
     public async Task<IActionResult> DeleteAsync([FromRoute] int id)
     {
-       
-        await _birthdayService.DeleteByIdAsync(id);
-         
-        return Ok();
-        
+        try
+        {
+            await _birthdayService.DeleteByIdAsync(id);
+
+            return Ok();
+        }
+        catch (InvalidOperationException exception)
+        {
+            return NotFound(exception.Message);
+        }
     }
 }

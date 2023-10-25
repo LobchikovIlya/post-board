@@ -15,39 +15,40 @@ public class BirthdayService : IBirthdayService
     {
         _dbContext = dbContext;
     }
- 
+
     public async Task<IList<Birthday>> GetAllAsync()
     {
-        return await _dbContext.Birthdays.ToListAsync();
+        var birthday = await _dbContext.Birthdays.ToListAsync();
+
+        return birthday;
     }
 
     public async Task<Birthday> GetByIdAsync(int id)
-    
+
     {
         var birthday = await _dbContext.Birthdays.FirstOrDefaultAsync(p => p.Id == id);
         if (birthday == null)
         {
-            throw new Exception($"Birthday not found");
+            throw new InvalidOperationException("Birthday not found");
         }
-       
-        
-        return await _dbContext.Birthdays.FirstOrDefaultAsync(p => p.Id == id);
+
+        return birthday;
     }
 
     public async Task<int> CreateAsync(Birthday input)
     {
-        _dbContext.Birthdays.Add(input);
+        await _dbContext.Birthdays.AddAsync(input);
         await _dbContext.SaveChangesAsync();
-        
+
         return input.Id;
-    } 
-    
+    }
+
     public async Task UpdateAsync(int id, Birthday input)
     {
         var birthday = await _dbContext.Birthdays.FirstOrDefaultAsync(p => p.Id == id);
         if (birthday == null)
         {
-            throw new Exception($"Birthday not found");
+            throw new InvalidOperationException("Birthday not found");
         }
 
         birthday.UserFullName = input.UserFullName;
@@ -55,13 +56,13 @@ public class BirthdayService : IBirthdayService
 
         await _dbContext.SaveChangesAsync();
     }
-    
+
     public async Task DeleteByIdAsync(int id)
     {
         var birthday = await _dbContext.Birthdays.FirstOrDefaultAsync(p => p.Id == id);
         if (birthday == null)
         {
-            throw new Exception($"Birthday not found");
+            throw new InvalidOperationException("Birthday not found");
         }
 
         _dbContext.Birthdays.Remove(birthday);

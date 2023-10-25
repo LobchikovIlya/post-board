@@ -7,12 +7,8 @@ public class PostValidator : AbstractValidator<Post>
 {
     public PostValidator()
     {
-        RuleFor(post => post.Title)
-            .NotEmpty()
-            .MaximumLength(50);
+        RuleFor(post => post.Title).NotEmpty().MaximumLength(50);
 
-        RuleFor(post => post.Body)
-            .NotEmpty()
-            .MaximumLength(1000);
+        RuleFor(post => post.Body).NotEmpty().MaximumLength(1000);
     }
 }
